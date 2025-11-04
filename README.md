@@ -77,4 +77,4 @@ IAnalyticsFlow‑FrontEnd/
 
 ## Autor
 Marlon William – [GitHub](https://github.com/marlonwi)  
-Desenvolvido como parte de um bootcamp e processo seletivo de estágio.
+Desenvolvido como parte de um processo seletivo de estágio.
