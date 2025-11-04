@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   CartesianGrid,
   BarChart,
@@ -12,7 +12,6 @@ import {
   RadarChart,
   Radar,
   ComposedChart,
-  Area,
   Cell,
   XAxis,
   YAxis,
@@ -23,6 +22,7 @@ import {
   PolarAngleAxis,
   PolarRadiusAxis,
 } from "recharts";
+import * as htmlToImage from "html-to-image";
 
 const COLORS = [
   "#4F46E5", "#10B981", "#F59E0B", "#EF4444",
@@ -49,6 +49,7 @@ export default function GraficoCard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [hiddenKeys, setHiddenKeys] = useState<string[]>([]);
+  const chartRef = useRef<HTMLDivElement>(null);
 
   const handleSearch = async () => {
     if (!query.trim()) return;
@@ -59,10 +60,9 @@ export default function GraficoCard() {
 
     try {
       const response = await fetch(`http://localhost:8000/chart?prompt=${encodeURIComponent(query)}`);
-      if (!response.ok) throw new Error("Erro na requisição");
+      if (!response.ok) throw new Error("Falha ao consultar dados. Tente novamente");
       const json: ApiResponse = await response.json();
 
-      // Gera campo temporário __xKey__ se houver múltiplos xFields
       const xFieldArray = Array.isArray(json.config.xFields) ? json.config.xFields : [json.config.xFields];
       const numericData = json.rows.map(row => {
         const newRow: Record<string, any> = {};
@@ -72,8 +72,6 @@ export default function GraficoCard() {
         json.config.yFields instanceof Array
           ? json.config.yFields.forEach((f: string) => newRow[f] = Number(row[f]))
           : newRow[json.config.yFields as string] = Number(row[json.config.yFields as string]);
-
-        // Concatena xFields em string para eixo X
         newRow["__xKey__"] = xFieldArray.map(f => row[f]).join(" - ");
         return newRow;
       });
@@ -93,7 +91,9 @@ export default function GraficoCard() {
         <div className="bg-gray-900 p-2 rounded-lg text-sm text-white shadow-lg">
           <p className="font-semibold mb-1">{label}</p>
           {payload.map((entry: any, i: number) => (
-            <p key={i} className="text-gray-300">{entry.name}: <span className="font-bold">{Number(entry.value).toLocaleString("pt-BR")}</span></p>
+            <p key={i} className="text-gray-300">
+              {entry.name}: <span className="font-bold">{Number(entry.value).toLocaleString("pt-BR")}</span>
+            </p>
           ))}
         </div>
       );
@@ -102,7 +102,22 @@ export default function GraficoCard() {
   };
 
   const toggleKey = (key: string) => {
-    setHiddenKeys(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
+    setHiddenKeys(prev =>
+      prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
+    );
+  };
+
+  const downloadChart = async () => {
+    if (!chartRef.current) return;
+    try {
+      const dataUrl = await htmlToImage.toPng(chartRef.current);
+      const link = document.createElement("a");
+      link.download = `${config?.title || "grafico"}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (error) {
+      console.error("Erro ao exportar imagem:", error);
+    }
   };
 
   const renderChart = () => {
@@ -118,7 +133,9 @@ export default function GraficoCard() {
             <YAxis width={80} tickFormatter={(v: number) => v >= 1_000_000 ? `${(v/1_000_000).toFixed(1)}M` : v.toLocaleString()} />
             <Tooltip content={<CustomTooltip />} />
             <Legend onClick={(e: any) => toggleKey(e.dataKey)} wrapperStyle={{ cursor: "pointer" }} />
-            {visibleFields.map((field, i) => <Bar key={field} dataKey={field} fill={COLORS[i % COLORS.length]} radius={6} />)}
+            {visibleFields.map((field, i) => (
+              <Bar key={field} dataKey={field} fill={COLORS[i % COLORS.length]} radius={6} />
+            ))}
           </BarChart>
         );
 
@@ -126,10 +143,12 @@ export default function GraficoCard() {
         return (
           <LineChart data={data}>
             <XAxis dataKey="__xKey__" />
-            <YAxis width={80} tickFormatter={(v: number) => v >= 1_000_000 ? `${(v/1_000_000).toFixed(1)}M` : v.toLocaleString()} />
+            <YAxis width={80} />
             <Tooltip content={<CustomTooltip />} />
-            <Legend onClick={(e: any) => toggleKey(e.dataKey)} wrapperStyle={{ cursor: "pointer" }} />
-            {visibleFields.map((field, i) => <Line key={field} type="monotone" dataKey={field} stroke={COLORS[i % COLORS.length]} strokeWidth={2} dot={false} />)}
+            <Legend onClick={(e: any) => toggleKey(e.dataKey)} />
+            {visibleFields.map((field, i) => (
+              <Line key={field} type="monotone" dataKey={field} stroke={COLORS[i % COLORS.length]} strokeWidth={2} dot={false} />
+            ))}
           </LineChart>
         );
 
@@ -173,10 +192,16 @@ export default function GraficoCard() {
           <ComposedChart data={data}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="__xKey__" />
-            <YAxis width={80} tickFormatter={(v: number) => v >= 1_000_000 ? `${(v/1_000_000).toFixed(1)}M` : v.toLocaleString()} />
+            <YAxis width={80} />
             <Tooltip content={<CustomTooltip />} />
-            <Legend onClick={(e: any) => toggleKey(e.dataKey)} wrapperStyle={{ cursor: "pointer" }} />
-            {visibleFields.map((f, i) => i === 0 ? <Bar key={f} dataKey={f} barSize={20} fill={COLORS[i % COLORS.length]} /> : <Line key={f} type="monotone" dataKey={f} stroke={COLORS[i % COLORS.length]} />)}
+            <Legend onClick={(e: any) => toggleKey(e.dataKey)} />
+            {visibleFields.map((f, i) =>
+              i === 0 ? (
+                <Bar key={f} dataKey={f} barSize={20} fill={COLORS[i % COLORS.length]} />
+              ) : (
+                <Line key={f} type="monotone" dataKey={f} stroke={COLORS[i % COLORS.length]} />
+              )
+            )}
           </ComposedChart>
         );
 
@@ -192,21 +217,35 @@ export default function GraficoCard() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Informe o que deseja que seja exibido no gráfico, períodos, estatísticas de vendas, etc..."
+          placeholder="Informe o que deseja que seja exibido no gráfico..."
           className="flex-1 p-2 rounded-lg bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-        <button onClick={handleSearch} className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-all">
+        <button
+          onClick={handleSearch}
+          className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-all"
+        >
           Buscar
         </button>
+        {data && config && (
+          <button
+            onClick={downloadChart}
+            className="cursor-pointer bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-all"
+          >
+            📥 Baixar gráfico
+          </button>
+        )}
       </div>
+
       <div>
         {loading && <p className="text-gray-400">Carregando...</p>}
         {error && <p className="text-red-500">{error}</p>}
         {data && config && (
-          <div>
+          <div ref={chartRef}>
             <h2 className="text-xl font-bold text-white mb-4">{config.title}</h2>
             <div style={{ width: "100%", height: 400 }}>
-              <ResponsiveContainer width="100%" height="100%">{renderChart()}</ResponsiveContainer>
+              <ResponsiveContainer width="100%" height="100%">
+                {renderChart()}
+              </ResponsiveContainer>
             </div>
           </div>
         )}

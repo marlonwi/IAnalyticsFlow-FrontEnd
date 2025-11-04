@@ -1,5 +1,5 @@
 import { useState } from "react";
-import ApiCard from "./components/ApiCard";
+import ApiCard from "./components/InsightCard";
 import GraficoCard from "./components/GraficoCard";
 import { BarChart2 } from "lucide-react";
 import { FileText } from "lucide-react";
@@ -7,9 +7,6 @@ import { Trash } from "lucide-react";
 
 export default function App() {
   const [cards, setCards] = useState<{ id: number; type: string }[]>([]);
-
-  const addPivotCard = () =>
-    setCards((prev) => [...prev, { id: Date.now(), type: "pivot" }]);
 
   const addApiCard = () =>
     setCards((prev) => [...prev, { id: Date.now(), type: "api" }]);
