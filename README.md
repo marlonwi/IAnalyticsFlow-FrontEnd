@@ -1,73 +1,80 @@
-# React + TypeScript + Vite
+# IAnalyticsFlow‑FrontEnd 🖥️
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Visão Geral
+Este é o front‑end do projeto **IAnalyticsFlow**, uma aplicação que permite consultas inteligentes, geração de gráficos dinâmicos (usando Recharts) e exportação de resultados.  
+O back‑end (API) está disponível no repositório correspondente.  
+Este projeto foi desenvolvido como parte de um processo seletivo de estágio, utilizando boas práticas de desenvolvimento full‑stack.
 
-Currently, two official plugins are available:
+## Funcionalidades
+- Buscar dados e insights através da API  
+- Renderizar diversos tipos de gráficos (barra, linha, pizza, dispersão, radar, composto)  
+- Exportar gráficos como imagem (PNG)  
+- Exportar relatórios em formato `.txt`  
+- Ocultar/mostrar séries no gráfico com clique na legenda  
+- Layout responsivo (adaptável para desktop e mobile)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Tech Stack
+- React (hooks)  
+- Recharts para visualização de dados  
+- Fetch API para comunicação com o back‑end  
+- Tailwind CSS para estilização rápida e responsiva  
+- Ambiente de desenvolvimento local com variáveis de ambiente para segurança de chaves
 
-## React Compiler
+## Pré‑requisitos
+- Node.js (v16 ou superior) e npm/yarn  
+- Back‑end IAnalyticsFlow‑BackEnd rodando e acessível  
+- Ambiente local:
+  ```bash
+  # clone este repositório
+  git clone https://github.com/marlonwi/IAnalyticsFlow‑FrontEnd.git
+  cd IAnalyticsFlow‑FrontEnd
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+  # instale as dependências
+  npm install
+  # ou
+  yarn install
+  ```
 
-## Expanding the ESLint configuration
+## Configuração de ambiente
+Crie um arquivo `.env` na raiz do front‑end com as variáveis necessárias:
+```env
+REACT_APP_API_URL=http://localhost:8000  # ou URL do back‑end no deploy
+```
+> **Importante**: nunca suba seu `.env` ou chaves secretas no repositório.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Como rodar
+```bash
+# rodando em modo de desenvolvimento
+npm start
+# ou
+yarn start
+```
+Abra [http://localhost:5173](http://localhost:5173) no navegador para visualizar o app.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Para build de produção:
+```bash
+npm run build
+# ou
+yarn build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Estrutura de Pastas
 ```
+IAnalyticsFlow‑FrontEnd/
+│
+├── public/                 # arquivos estáticos
+├── src/
+│   ├── components/         # componentes reutilizáveis (MarkdownCard, GraficoCard, etc)
+│   ├── pages/              # telas/rotas da aplicação
+│   ├── services/           # chamadas à API
+│   ├── styles/             # arquivos de estilo adicionais
+│   └── App.tsx             # componente raiz
+│
+├── .env                    # variáveis de ambiente (não comitar)
+├── package.json
+└── README.md
+```
+
+## Autor
+Marlon William – [GitHub](https://github.com/marlonwi)  
+Desenvolvido como parte de um bootcamp e processo seletivo de estágio.
